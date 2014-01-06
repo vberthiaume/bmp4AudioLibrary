@@ -8,8 +8,6 @@
 
 #include "bmp4AudioLibrary.h"
 
-namespace bmp4
-{
 	//****************** overdrive as per p. 142 DAFX 2ed ******************
 	template<class T> void bmp4::overdriveSingleChannel(T &p_in, T &p_out)
 	{
@@ -80,5 +78,3 @@ namespace bmp4
 	{
 		return v > 0 ? 1.f : (v < 0 ? -1.f : 0.f);
 	}
-
-}

@@ -7,17 +7,15 @@
 //-------------------------------------------------------------------------------------------------------	
 
 
-namespace bmp4
-{
-	class bmp4
-	{
-	public:
-		template <class T> T sign(T &v);
 
-		//template function used to apply overdrive on single channels
-		template<class T> void overdriveSingleChannel(T &p_in, T &p_out);
-		template<class T> void distortionSingleChannel(T &p_in, T &p_out);
+class bmp4
+{
+public:
+	template <class T> T sign(T &v);
+
+	//template function used to apply overdrive on single channels
+	template<class T> static void overdriveSingleChannel(T &p_in, T &p_out);
+	template<class T> static void distortionSingleChannel(T &p_in, T &p_out);
 	
-		template<class T> void bypassSingleChannel(T &p_in, T &p_out);
-	};
-}
+	template<class T> static void bypassSingleChannel(T &p_in, T &p_out);
+};
