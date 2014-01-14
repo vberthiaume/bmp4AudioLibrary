@@ -12,33 +12,48 @@
 
 //-------------------------------------------------------------------------------------------------------	
 //PROTOTYPES
-template<class T> class bmp4;
+//template<class T> class bmp4;
 
-template<class T> class bmp4{
+template<class T> 
+class bmp4{
 public:
 	bmp4();
-	T sign(T &v);																	//template function, returns 1 for positive numbers and -1 for negative numbers
-	void overdriveSingleChannel(T &p_in, T &p_out, T &p_fGain);						//template function used to apply overdrive on single channels
-	void distortionSingleChannel(T &p_in, T &p_out, float &p_fDist, float &p_fGain); //template function used to apply distortion on single channels
+	
+	
+	void overdriveMono(T &p_in, T &p_out, T &p_fGain);						//template function used to apply overdrive on single channels
+	void overdriveStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fGain);
+	
+	void distortionMono(T &p_in, T &p_out, float &p_fDist, float &p_fGain); //template function used to apply distortion on single channels
+	void distortionStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fDist, float &p_fGain);
+
+	void delayMonoInput(T &p_in, T &p_out, T &p_out2);
+		
 	void bypassSingleChannel(T &p_in, T &p_out);										//template function used to bypass single channels, can be used for testing
-	void delay(T &p_in, T &p_out, float &p_fDist, float &p_fGain);
+	T sign(T &v);																	//template function, returns 1 for positive numbers and -1 for negative numbers
+	
 private:
-	T buffer[44100];
+	T* buffer;
+	float fFeedBack;
+	long delay;
+	long cursor;
+
 };
 
 //-------------------------------------------------------------------------------------------------------	
 //DEFINITIONS
 template<class T>
-bmp4<T>::bmp4(){
-	int cursor = 0;
-	//int size = 44100;
-	//T buffer;
+bmp4<T>::bmp4(): cursor(0), delay(22000), fFeedBack(.5)
+{
+	int size = 44100;
+	buffer = new T[size];
+	memset (buffer, 0, size * sizeof (T));
+	//buffer[44100] = {0};
 }
 
 
 //****************** overdrive as per p. 142 DAFX 2ed ******************
 template<class T> 
-void bmp4<T>::overdriveSingleChannel(T &p_in, T &p_out, T &p_fGain)
+void bmp4<T>::overdriveMono(T &p_in, T &p_out, T &p_fGain)
 {
 	//safely cast parameters to avoid problems	
 	T gain = static_cast<T> (p_fGain);
@@ -70,9 +85,15 @@ void bmp4<T>::overdriveSingleChannel(T &p_in, T &p_out, T &p_fGain)
 	//p_out = mix * p_out + (1-mix)* originalFrame;
 }
 
+template<class T> 
+void bmp4<T>::overdriveStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fGain) {
+	overdriveMono(p_in1, p_out1, p_fDist, p_fGain);
+	overdriveMono(p_in2, p_out2, p_fDist, p_fGain);
+}
+
 //****************** distortion as per p. 144 DAFX 2ed ******************
 template<class T> 
-void bmp4<T>::distortionSingleChannel(T &p_in, T &p_out, float &p_fDist, float &p_fGain) {
+void bmp4<T>::distortionMono(T &p_in, T &p_out, float &p_fDist, float &p_fGain) {
 	
 	//clip limit
 	T clipLimit = .999f;
@@ -99,20 +120,25 @@ void bmp4<T>::distortionSingleChannel(T &p_in, T &p_out, float &p_fDist, float &
 }
 
 template<class T> 
-void bmp4<T>::delay(T &p_in, T &p_out, float &p_fDist, float &p_fGain){
-	float* in = inputs[0];
-	float* out1 = outputs[0];
-	float* out2 = outputs[1];
+void bmp4<T>::distortionStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fDist, float &p_fGain) {
+	distortionMono(p_in1, p_out1, p_fDist, p_fGain);
+	distortionMono(p_in2, p_out2, p_fDist, p_fGain);
+}
 
-	float x = *in++;
-	float y = buffer[cursor];
-	buffer[cursor++] = x + y * fFeedBack;
-	if (cursor >= delay)
+
+template<class T> 
+void bmp4<T>::delayMonoInput(T &p_in, T &p_out1, T &p_out2){
+
+	T new_sample = p_in;
+	T old_sample = buffer[cursor];
+
+	buffer[cursor++] = new_sample + old_sample * fFeedBack;
+
+	if (cursor >= delay){
 		cursor = 0;
-	*out1++ = y;
-	if (out2)
-		*out2++ = y;
-	
+	}
+	p_out1 = old_sample;
+	p_out2 = old_sample;
 }
 
 template<class T> 
