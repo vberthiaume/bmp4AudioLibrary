@@ -9,7 +9,6 @@
 #define __bmp4audiolibrary__
 
 #include "math.h"
-#include <boost\any.hpp>
 
 //-------------------------------------------------------------------------------------------------------	
 //PROTOTYPES
@@ -26,23 +25,22 @@ public:
 	void distortionMono(T &p_in, T &p_out, float &p_fDist, float &p_fGain); //template function used to apply distortion on single channels
 	void distortionStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fDist, float &p_fGain);
 
-	void delayMonoInput(T &p_in, T &p_out, T &p_out2);
+	void delayMonoInput(T &p_in, T &p_out, T &p_out2, const long &delay, const float &fFeedBack);
 		
 	void bypassSingleChannel(T &p_in, T &p_out);										//template function used to bypass single channels, can be used for testing
 	T sign(T &v);																	//template function, returns 1 for positive numbers and -1 for negative numbers
 	
 private:
 	T* buffer;
-	float fFeedBack;
-	long delay;
 	long cursor;
+	long lDelayLenght;
 
 };
 
 //-------------------------------------------------------------------------------------------------------	
 //DEFINITIONS
 template<class T>
-bmp4<T>::bmp4(): cursor(0), delay(22000), fFeedBack(.5)
+bmp4<T>::bmp4(): cursor(0) 
 {
 	int size = 44100;
 	buffer = new T[size];
@@ -126,7 +124,7 @@ void bmp4<T>::distortionStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &
 
 
 template<class T> 
-void bmp4<T>::delayMonoInput(T &p_in, T &p_out1, T &p_out2){
+void bmp4<T>::delayMonoInput(T &p_in, T &p_out1, T &p_out2, const long &delay, const float &fFeedBack){
 
 	T new_sample = p_in;
 	T old_sample = buffer[cursor];
