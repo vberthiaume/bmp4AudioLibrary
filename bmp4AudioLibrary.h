@@ -9,6 +9,7 @@
 #define __bmp4audiolibrary__
 
 #include "math.h"
+#include <boost\any.hpp>
 
 //-------------------------------------------------------------------------------------------------------	
 //PROTOTYPES
@@ -18,8 +19,7 @@ template<class T>
 class bmp4{
 public:
 	bmp4();
-	
-	
+
 	void overdriveMono(T &p_in, T &p_out, T &p_fGain);						//template function used to apply overdrive on single channels
 	void overdriveStereo(T &p_in1, T &p_out1, T &p_in2, T &p_out2, float &p_fGain);
 	
@@ -47,7 +47,6 @@ bmp4<T>::bmp4(): cursor(0), delay(22000), fFeedBack(.5)
 	int size = 44100;
 	buffer = new T[size];
 	memset (buffer, 0, size * sizeof (T));
-	//buffer[44100] = {0};
 }
 
 
@@ -151,7 +150,5 @@ T bmp4<T>::sign(T &v)
 {
 	return v > 0 ? 1.f : (v < 0 ? -1.f : 0.f);
 }
-
-
 
 #endif
